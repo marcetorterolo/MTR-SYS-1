@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using MTRSYS.Web.Models;
+using MTRSYS.Entities.Identity;
 
 namespace MTRSYS.Web.Controllers
 {
@@ -60,6 +61,7 @@ namespace MTRSYS.Web.Controllers
                 : message == ManageMessageId.Error ? "Se ha producido un error."
                 : message == ManageMessageId.AddPhoneSuccess ? "Se ha agregado su número de teléfono."
                 : message == ManageMessageId.RemovePhoneSuccess ? "Se ha quitado su número de teléfono."
+                : message == ManageMessageId.EditInfoSuccess ? "Información personal editada."
                 : "";
 
             var userId = User.Identity.GetUserId();
@@ -244,6 +246,48 @@ namespace MTRSYS.Web.Controllers
         }
 
         //
+        // GET: /Manage/EditPersonalInfo
+        public ActionResult EditPersonalInfo()
+        {
+            string firstName = User.Identity.GetFirstName();
+            string lastName = User.Identity.GetLastName();
+            return View(new PersonalInfoViewModel() { FirstName = firstName, LastName = lastName });
+        }
+
+        //
+        // POST: /Manage/EditPersonalInfo
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditPersonalInfo(PersonalInfoViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            // Get the existing User from the db
+            var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+
+            // Update it with the values from the view model
+            user.AppUserInfo.FirstName = model.FirstName;
+            user.AppUserInfo.LastName = model.LastName;
+
+            // Apply the changes if any to the db
+            var result = await UserManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                var user2 = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                if (user2 != null)
+                {
+                    await SignInManager.SignInAsync(user2, isPersistent: false, rememberBrowser: false);
+                }
+                return RedirectToAction("Index", new { Message = ManageMessageId.EditInfoSuccess });
+            }
+            AddErrors(result);
+            return View(model);
+        }
+
+        //
         // GET: /Manage/SetPassword
         public ActionResult SetPassword()
         {
@@ -380,6 +424,7 @@ namespace MTRSYS.Web.Controllers
             SetPasswordSuccess,
             RemoveLoginSuccess,
             RemovePhoneSuccess,
+            EditInfoSuccess,
             Error
         }
 

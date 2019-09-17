@@ -57,6 +57,17 @@ namespace MTRSYS.Web.Models
         [Compare("NewPassword", ErrorMessage = "La contraseña nueva y la contraseña de confirmación no coinciden.")]
         public string ConfirmPassword { get; set; }
     }
+    
+    public class PersonalInfoViewModel
+    {
+        [Required]
+        [Display(Name = "Nombre")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Apellido")]
+        public string LastName { get; set; }
+    }
 
     public class AddPhoneNumberViewModel
     {
