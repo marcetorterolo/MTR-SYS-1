@@ -15,6 +15,7 @@ namespace MTRSYS.Entities.Identity
 
             // Agregar aquí notificaciones personalizadas de usuario
             userIdentity.AddClaim(new Claim("AppUserInfoFirstName", AppUserInfo.FirstName));
+            userIdentity.AddClaim(new Claim("AppUserInfoLastName",  AppUserInfo.LastName));
 
             return userIdentity;
         }

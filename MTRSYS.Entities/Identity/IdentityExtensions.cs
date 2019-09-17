@@ -11,5 +11,12 @@ namespace MTRSYS.Entities.Identity
             // Test for null to avoid issues during local testing
             return (claim != null) ? claim.Value : string.Empty;
         }
+
+        public static string GetLastName(this IIdentity identity)
+        {
+            var claim = ((ClaimsIdentity)identity).FindFirst("AppUserInfoLastName");
+            // Test for null to avoid issues during local testing
+            return (claim != null) ? claim.Value : string.Empty;
+        }
     }
 }
