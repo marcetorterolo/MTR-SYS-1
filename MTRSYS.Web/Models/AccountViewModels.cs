@@ -6,6 +6,14 @@ namespace MTRSYS.Web.Models
     public class ExternalLoginConfirmationViewModel
     {
         [Required]
+        [Display(Name = "Nombre")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Apellido")]
+        public string LastName { get; set; }
+
+        [Required]
         [Display(Name = "Correo electrónico")]
         public string Email { get; set; }
     }

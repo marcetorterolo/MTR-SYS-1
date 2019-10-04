@@ -343,7 +343,23 @@ namespace MTRSYS.Web.Controllers
                     // Si el usuario no tiene ninguna cuenta, solicitar que cree una
                     ViewBag.ReturnUrl = returnUrl;
                     ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
-                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
+
+                    string firstNameClaim = string.Empty;
+                    string lastNameClaim = string.Empty;
+                    switch (loginInfo.Login.LoginProvider)
+                    {
+                        case "Google":
+                            firstNameClaim = loginInfo.ExternalIdentity.Claims.First(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname").Value;
+                            lastNameClaim = loginInfo.ExternalIdentity.Claims.First(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname").Value;
+                            break;
+
+                        case "Facebook":
+                            firstNameClaim = loginInfo.ExternalIdentity.Claims.First(c => c.Type == "urn:facebook:first_name").Value;
+                            lastNameClaim = loginInfo.ExternalIdentity.Claims.First(c => c.Type == "urn:facebook:last_name").Value;
+                            break;
+                    }
+
+                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email, FirstName = firstNameClaim, LastName = lastNameClaim });
             }
         }
 
@@ -368,6 +384,8 @@ namespace MTRSYS.Web.Controllers
                     return View("ExternalLoginFailure");
                 }
                 var user = new AppUser { UserName = model.Email, Email = model.Email };
+                user.AppUserInfo = new AppUserInfo { FirstName = model.FirstName, LastName = model.LastName };
+
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

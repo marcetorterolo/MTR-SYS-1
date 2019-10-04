@@ -2,6 +2,8 @@
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
+using Microsoft.Owin.Security.Facebook;
+using Microsoft.Owin.Security.Google;
 using MTRSYS.Entities.Identity;
 using MTRSYS.Web.Data;
 using Owin;
@@ -54,15 +56,41 @@ namespace MTRSYS.Web
             //   consumerKey: "",
             //   consumerSecret: "");
 
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
+            #region Facebook
+            var fbAuthOptions = new FacebookAuthenticationOptions()
+            {
+                AppId = "",
+                AppSecret = "",
+            };
+            fbAuthOptions.Scope.Add("email");
+            fbAuthOptions.Scope.Add("public_profile");
+            fbAuthOptions.Provider = new FacebookAuthenticationProvider()
+            {
+                OnAuthenticated = async context =>
+                {
+                    context.Identity.AddClaim(new System.Security.Claims.Claim("FacebookAccessToken", context.AccessToken));
+                    foreach (var claim in context.User)
+                    {
+                        var claimType = string.Format("urn:facebook:{0}", claim.Key);
+                        string claimValue = claim.Value.ToString();
+                        if (!context.Identity.HasClaim(claimType, claimValue))
+                            context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Facebook"));
+                    }
+                }
+            };
+            fbAuthOptions.SignInAsAuthenticationType = DefaultAuthenticationTypes.ExternalCookie;
+            app.UseFacebookAuthentication(fbAuthOptions);
+            #endregion
 
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "",
-            //    ClientSecret = ""
-            //});
+            #region Google
+            var googleAuthOptions = new GoogleOAuth2AuthenticationOptions()
+            {
+                ClientId = "",
+                ClientSecret = ""
+            };
+            googleAuthOptions.SignInAsAuthenticationType = DefaultAuthenticationTypes.ExternalCookie;
+            app.UseGoogleAuthentication(googleAuthOptions);
+            #endregion
         }
     }
 }
